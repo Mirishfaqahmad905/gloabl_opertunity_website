@@ -14,7 +14,14 @@ const mongoURI = process.env.MONGODB_URI;
 
 // Middleware to connect to DB before handling requests
 app.use(async (req, res, next) => {
-  if (mongoURI && !isConnected) {
+  if (!mongoURI) {
+    console.error("MONGODB_URI is missing.");
+    if (req.path.includes('/public/settings')) return res.json({});
+    if (req.path.includes('/public/carousels') || req.path.includes('/public/ads') || req.path.includes('/public/scholarships') || req.path.includes('/public/blogs') || req.path.includes('/public/countries')) return res.json([]);
+    return res.status(500).json({ error: "Database configuration missing. Please set MONGODB_URI environment variable in your Vercel settings." });
+  }
+
+  if (!isConnected) {
     try {
       await mongoose.connect(mongoURI, {
         serverSelectionTimeoutMS: 5000
@@ -23,6 +30,9 @@ app.use(async (req, res, next) => {
       console.log("Connected to MongoDB in serverless function");
     } catch (err) {
       console.error("MongoDB connection error:", err);
+      if (req.path.includes('/public/settings')) return res.json({});
+      if (req.path.includes('/public/carousels') || req.path.includes('/public/ads') || req.path.includes('/public/scholarships') || req.path.includes('/public/blogs') || req.path.includes('/public/countries')) return res.json([]);
+      return res.status(500).json({ error: "Failed to connect to database." });
     }
   }
   next();

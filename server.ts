@@ -13,18 +13,30 @@ async function startServer() {
 
   // Connect to DB if configured
   const mongoURI = process.env.MONGODB_URI;
+  let dbConnected = false;
   if (!mongoURI) {
     console.warn("⚠️ MONGODB_URI is not defined in .env. Database will not connect.");
   } else {
     try {
       await mongoose.connect(mongoURI);
       console.log("✅ Connected to MongoDB");
+      dbConnected = true;
     } catch (err) {
       console.error("❌ MongoDB connection error:", err);
     }
   }
 
   app.use(express.json());
+
+  // Fail fast middleware if DB is not connected
+  app.use("/api", (req, res, next) => {
+    if (!dbConnected && req.path !== "/health") {
+      if (req.path.includes('/public/settings')) return res.json({});
+      if (req.path.includes('/public/carousels') || req.path.includes('/public/ads') || req.path.includes('/public/scholarships') || req.path.includes('/public/blogs') || req.path.includes('/public/countries')) return res.json([]);
+      return res.status(500).json({ error: "Database configuration missing. Please set MONGODB_URI environment variable." });
+    }
+    next();
+  });
 
   // API Routes
   app.use("/api", apiRouter);
