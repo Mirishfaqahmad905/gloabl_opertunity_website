@@ -1,0 +1,6 @@
+{
+  "name": "GlobalOpportunity Scholarship Platform",
+  "description": "A dynamic full-stack scholarship listing platform with admin dashboard and blog system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
