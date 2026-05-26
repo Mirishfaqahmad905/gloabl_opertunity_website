@@ -55,6 +55,7 @@ export default function Footer() {
               <a href="/scholarships" className="hover:text-blue-400 transition-colors">All Scholarships</a>
               <a href="/blogs" className="hover:text-blue-400 transition-colors">Latest Blogs</a>
               <a href="/contact" className="hover:text-blue-400 transition-colors">Contact Us</a>
+              <a href="/admin" className="hover:text-amber-400 text-amber-500/80 font-medium transition-colors">Manage (Admin)</a>
             </div>
           </div>
           

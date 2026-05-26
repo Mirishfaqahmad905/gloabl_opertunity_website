@@ -73,6 +73,10 @@ apiRouter.post('/admin/password', authMiddleware, safe(async (req: any, res: any
 }));
 
 // --- PUBLIC ROUTES ---
+apiRouter.get('/', (req, res) => {
+  res.json({ message: 'GlobalOpportunity API is running.' });
+});
+
 apiRouter.get('/public/scholarships', safe(async (req: any, res: any) => {
   const query: any = {};
   if (req.query.country) query.country = req.query.country;
