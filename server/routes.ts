@@ -9,8 +9,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey123';
 // Safely wrap async functions to prevent unhandled promise rejections
 const safe = (fn: any) => (req: any, res: any, next: any) => {
   Promise.resolve(fn(req, res, next)).catch(err => {
-    console.error('API Route Error:', err.message);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error(`API Route Error [${req.method} ${req.path}]:`, err.message);
+    if (!res.headersSent) {
+      if (req.method === 'GET' && req.path.includes('/settings')) return res.json({});
+      if (req.method === 'GET' && req.path.includes('/public/')) return res.json([]);
+      res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    }
   });
 };
 

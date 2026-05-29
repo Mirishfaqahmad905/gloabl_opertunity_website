@@ -4,9 +4,26 @@ import mongoose from "mongoose";
 import { createServer as createViteServer } from "vite";
 import { apiRouter } from "./server/routes";
 import dotenv from "dotenv";
+import fs from "fs";
 import cors from "cors";
 
+// Try loading .env first
 dotenv.config();
+
+// Fallback to .env.example if MONGODB_URI is not set
+if (!process.env.MONGODB_URI) {
+  try {
+    const envExamplePath = path.resolve(process.cwd(), '.env.example');
+    if (fs.existsSync(envExamplePath)) {
+      const envExample = dotenv.parse(fs.readFileSync(envExamplePath));
+      for (const k in envExample) {
+        if (!process.env[k]) process.env[k] = envExample[k];
+      }
+    }
+  } catch (e) {
+    console.warn('Could not load .env.example fallback', e);
+  }
+}
 
 async function startServer() {
   const app = express();
@@ -14,7 +31,7 @@ async function startServer() {
   const PORT = 3000;
 
   // Connect to DB if configured
-  const mongoURI = process.env.MONGODB_URI;
+  const mongoURI = process.env.MONGODB_URI || "mongodb+srv://mirishfaqahmad905:mirishfaqahmad905@cluster0.utdlxdg.mongodb.net/globalscholarship?retryWrites=true&w=majority&appName=Cluster0";
   let dbConnected = false;
   if (!mongoURI) {
     console.warn("⚠️ MONGODB_URI is not defined in .env. Database will not connect.");
@@ -32,12 +49,12 @@ async function startServer() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-  // Fail fast middleware if DB is not configured
+  // Fail fast middleware if DB is not configured or not connected
   app.use("/api", (req, res, next) => {
-    if (!mongoURI && req.path !== "/health") {
+    if ((!mongoURI || mongoose.connection.readyState !== 1) && req.path !== "/health") {
       if (req.path.includes('/public/settings')) return res.json({});
       if (req.path.includes('/public/carousels') || req.path.includes('/public/ads') || req.path.includes('/public/scholarships') || req.path.includes('/public/blogs') || req.path.includes('/public/countries')) return res.json([]);
-      return res.status(500).json({ error: "Database configuration missing. Please set MONGODB_URI environment variable." });
+      return res.status(500).json({ error: "Database not connected or configuration missing. Please ensure MongoDB is running and MONGODB_URI is correct." });
     }
     next();
   });

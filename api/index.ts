@@ -2,9 +2,27 @@ import mongoose from "mongoose";
 import express from "express";
 import { apiRouter } from "../server/routes";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 import cors from "cors";
 
+// Try loading .env first
 dotenv.config();
+
+// Fallback to .env.example if MONGODB_URI is not set
+if (!process.env.MONGODB_URI) {
+  try {
+    const envExamplePath = path.resolve(process.cwd(), '.env.example');
+    if (fs.existsSync(envExamplePath)) {
+      const envExample = dotenv.parse(fs.readFileSync(envExamplePath));
+      for (const k in envExample) {
+        if (!process.env[k]) process.env[k] = envExample[k];
+      }
+    }
+  } catch (e) {
+    console.warn('Could not load .env.example fallback', e);
+  }
+}
 
 const app = express();
 
@@ -59,7 +77,7 @@ async function connectToDatabase(uri: string) {
 
 // Middleware to connect to DB before handling requests
 app.use(async (req, res, next) => {
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI || "mongodb+srv://mirishfaqahmad905:mirishfaqahmad905@cluster0.utdlxdg.mongodb.net/globalscholarship?retryWrites=true&w=majority&appName=Cluster0";
 
   if (!uri) {
     console.error("MONGODB_URI is missing.");
