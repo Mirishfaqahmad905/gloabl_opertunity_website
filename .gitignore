@@ -4,5 +4,9 @@ dist/
 coverage/
 .DS_Store
 *.log
-.env*
-!.env.example
+
+# Only ignore local/development secrets if specific
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

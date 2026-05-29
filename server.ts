@@ -4,12 +4,14 @@ import mongoose from "mongoose";
 import { createServer as createViteServer } from "vite";
 import { apiRouter } from "./server/routes";
 import dotenv from "dotenv";
+import cors from "cors";
 
 dotenv.config();
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT || 3000;
+  app.use(cors());
+  const PORT = 3000;
 
   // Connect to DB if configured
   const mongoURI = process.env.MONGODB_URI;
@@ -17,21 +19,22 @@ async function startServer() {
   if (!mongoURI) {
     console.warn("⚠️ MONGODB_URI is not defined in .env. Database will not connect.");
   } else {
-    try {
-      await mongoose.connect(mongoURI);
-      console.log("✅ Connected to MongoDB");
-      dbConnected = true;
-    } catch (err) {
-      console.error("❌ MongoDB connection error:", err);
-    }
+    mongoose.connect(mongoURI)
+      .then(() => {
+        console.log("✅ Connected to MongoDB");
+        dbConnected = true;
+      })
+      .catch((err) => {
+        console.error("❌ MongoDB connection error:", err);
+      });
   }
 
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-  // Fail fast middleware if DB is not connected
+  // Fail fast middleware if DB is not configured
   app.use("/api", (req, res, next) => {
-    if (!dbConnected && req.path !== "/health") {
+    if (!mongoURI && req.path !== "/health") {
       if (req.path.includes('/public/settings')) return res.json({});
       if (req.path.includes('/public/carousels') || req.path.includes('/public/ads') || req.path.includes('/public/scholarships') || req.path.includes('/public/blogs') || req.path.includes('/public/countries')) return res.json([]);
       return res.status(500).json({ error: "Database configuration missing. Please set MONGODB_URI environment variable." });

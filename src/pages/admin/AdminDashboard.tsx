@@ -155,20 +155,6 @@ function SettingsManager() {
           </div>
         ))}
 
-        <h3 className="font-bold text-slate-800 pt-4 border-t border-slate-100">SEO Settings</h3>
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Meta Title</label>
-          <input type="text" value={settings.seo?.title || ''} onChange={e => setSettings({...settings, seo: {...(settings.seo || {}), title: e.target.value}})} className="mt-1 w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-600" />
-        </div>
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Meta Description</label>
-          <textarea value={settings.seo?.description || ''} onChange={e => setSettings({...settings, seo: {...(settings.seo || {}), description: e.target.value}})} className="mt-1 w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-600" rows={2}></textarea>
-        </div>
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Meta Keywords (Comma separated)</label>
-          <textarea value={settings.seo?.keywords || ''} onChange={e => setSettings({...settings, seo: {...(settings.seo || {}), keywords: e.target.value}})} className="mt-1 w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-600" rows={2}></textarea>
-        </div>
-
         <h3 className="font-bold text-slate-800 pt-4 border-t border-slate-100">Help Page Content</h3>
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Help Title</label>
