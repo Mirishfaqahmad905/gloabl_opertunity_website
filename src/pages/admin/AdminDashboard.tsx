@@ -39,12 +39,12 @@ export default function AdminDashboard() {
           <h1 className="text-xl font-bold text-slate-800">Admin Panel</h1>
           <Link to="/" className="text-slate-400 hover:text-blue-600" title="Go to Website"><Home className="w-5 h-5"/></Link>
         </div>
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 flex md:block overflow-x-auto gap-2 md:space-y-1 no-scrollbar md:pb-4 pb-2">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-colors ${
+              className={`flex-shrink-0 md:w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-colors ${
                 activeTab === tab.id ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
           ))}
           <button
             onClick={logout}
-            className="w-full flex items-center px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-xl mt-8 transition-colors"
+            className="flex-shrink-0 md:w-full flex items-center px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-xl md:mt-8 transition-colors"
           >
             <LogOut className="w-5 h-5 mr-2" /> Logout
           </button>
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto">
+      <div className="flex-1 p-4 md:p-8 overflow-auto w-full max-w-full">
         {activeTab === 'settings' ? <SettingsManager /> : <CrudView model={activeTab} />}
       </div>
     </div>
@@ -154,6 +154,20 @@ function SettingsManager() {
             <input type="text" value={settings.socialLinks?.[social as keyof typeof settings.socialLinks] || ''} onChange={e => setSettings({...settings, socialLinks: {...settings.socialLinks, [social]: e.target.value}})} className="mt-1 w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-600" />
           </div>
         ))}
+
+        <h3 className="font-bold text-slate-800 pt-4 border-t border-slate-100">SEO Settings</h3>
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Meta Title</label>
+          <input type="text" value={settings.seo?.title || ''} onChange={e => setSettings({...settings, seo: {...(settings.seo || {}), title: e.target.value}})} className="mt-1 w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+        </div>
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Meta Description</label>
+          <textarea value={settings.seo?.description || ''} onChange={e => setSettings({...settings, seo: {...(settings.seo || {}), description: e.target.value}})} className="mt-1 w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-600" rows={2}></textarea>
+        </div>
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Meta Keywords (Comma separated)</label>
+          <textarea value={settings.seo?.keywords || ''} onChange={e => setSettings({...settings, seo: {...(settings.seo || {}), keywords: e.target.value}})} className="mt-1 w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-600" rows={2}></textarea>
+        </div>
 
         <h3 className="font-bold text-slate-800 pt-4 border-t border-slate-100">Help Page Content</h3>
         <div>

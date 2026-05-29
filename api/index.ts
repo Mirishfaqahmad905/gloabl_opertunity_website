@@ -7,35 +7,41 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-let isConnected = false;
-const mongoURI = process.env.MONGODB_URI;
+let cachedDb: typeof mongoose | null = null;
 
 // Middleware to connect to DB before handling requests
 app.use(async (req, res, next) => {
-  if (!mongoURI) {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
     console.error("MONGODB_URI is missing.");
     if (req.path.includes('/public/settings')) return res.json({});
     if (req.path.includes('/public/carousels') || req.path.includes('/public/ads') || req.path.includes('/public/scholarships') || req.path.includes('/public/blogs') || req.path.includes('/public/countries')) return res.json([]);
     return res.status(500).json({ error: "Database configuration missing. Please set MONGODB_URI environment variable in your Vercel settings." });
   }
 
-  if (!isConnected) {
-    try {
-      await mongoose.connect(mongoURI, {
-        serverSelectionTimeoutMS: 5000
-      });
-      isConnected = mongoose.connection.readyState === 1;
-      console.log("Connected to MongoDB in serverless function");
-    } catch (err) {
-      console.error("MongoDB connection error:", err);
-      if (req.path.includes('/public/settings')) return res.json({});
-      if (req.path.includes('/public/carousels') || req.path.includes('/public/ads') || req.path.includes('/public/scholarships') || req.path.includes('/public/blogs') || req.path.includes('/public/countries')) return res.json([]);
-      return res.status(500).json({ error: "Failed to connect to database." });
-    }
+  if (cachedDb && mongoose.connection.readyState === 1) {
+    return next();
   }
-  next();
+
+  try {
+    if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
+      cachedDb = await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+      });
+      console.log("Connected to MongoDB in serverless function");
+    }
+    next();
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    if (req.path.includes('/public/settings')) return res.json({});
+    if (req.path.includes('/public/carousels') || req.path.includes('/public/ads') || req.path.includes('/public/scholarships') || req.path.includes('/public/blogs') || req.path.includes('/public/countries')) return res.json([]);
+    return res.status(500).json({ error: "Failed to connect to database." });
+  }
 });
 
 // Setup API Routes

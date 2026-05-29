@@ -122,8 +122,8 @@ export default function CrudView({ model }: { model: string }) {
         )}
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-500">
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-left text-sm text-gray-500 min-w-full">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
               {schema.length > 0 ? schema.slice(0, 3).map(col => (
@@ -190,13 +190,33 @@ export default function CrudView({ model }: { model: string }) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
                   )}
                   {field.type === 'textarea' ? (
-                    <textarea 
-                      required={field.key === 'content' || field.key === 'description'} 
-                      rows={4} 
-                      className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none"
-                      value={currentEdit[field.key] || ''} 
-                      onChange={e => setCurrentEdit({...currentEdit, [field.key]: e.target.value})}
-                    />
+                    <div>
+                      <textarea 
+                        required={field.key === 'content' || field.key === 'description'} 
+                        rows={4} 
+                        className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                        value={currentEdit[field.key] || ''} 
+                        onChange={e => setCurrentEdit({...currentEdit, [field.key]: e.target.value})}
+                      />
+                      {model === 'ads' && field.key === 'content' && currentEdit['type'] === 'image' && (
+                        <div className="mt-2 text-sm text-gray-500 text-center font-medium my-2">- OR -</div>
+                      )}
+                      {model === 'ads' && field.key === 'content' && currentEdit['type'] === 'image' && (
+                        <div className="mt-2">
+                          <input type="file" accept="image/*" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => setCurrentEdit({...currentEdit, [field.key]: reader.result as string});
+                              reader.readAsDataURL(file);
+                            }
+                          }} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                          {currentEdit['content'] && currentEdit['content'].length > 10 && (
+                            <img src={currentEdit['content']} alt="Ad Preview" className="mt-4 max-h-32 object-contain bg-slate-100 border border-gray-200 rounded-md" />
+                          )}
+                        </div>
+                      )}
+                    </div>
                   ) : field.type === 'select' ? (
                     <select 
                       className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none bg-white"

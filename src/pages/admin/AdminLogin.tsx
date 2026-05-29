@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { Home } from 'lucide-react';
 import api from '../../api';
 
 export default function AdminLogin() {
@@ -24,10 +25,16 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md mb-4">
+        <Link to="/" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">
+          <Home className="w-4 h-4 mr-2" />
+          Back to Website
+        </Link>
+      </div>
+      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100 relative">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">Admin Portal</h2>
+          <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900 tracking-tight">Admin Portal</h2>
           <p className="mt-2 text-center text-sm text-gray-600">Sign in to manage the platform</p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
@@ -54,6 +61,11 @@ export default function AdminLogin() {
             </div>
           </div>
           {error && <div className="text-red-500 text-sm text-center font-medium bg-red-50 py-2 rounded-lg">{error}</div>}
+          <div className="flex items-center justify-between mt-4">
+            <Link to="/admin/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              Create account / Forgot password?
+            </Link>
+          </div>
           <button
             type="submit"
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl text-sm font-bold text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"

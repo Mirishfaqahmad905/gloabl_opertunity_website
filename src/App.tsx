@@ -21,6 +21,7 @@ import VideosPage from './pages/VideosPage';
 import ServicesPage from './pages/ServicesPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLogin from './pages/admin/AdminLogin';
+import AdminForgot from './pages/admin/AdminForgot';
 import SubscriptionPopup from './components/SubscriptionPopup';
 
 import AdBanner from './components/AdBanner';
@@ -80,6 +81,7 @@ export default function App() {
       <Routes>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/forgot-password" element={<AdminForgot />} />
         
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<HomePage />} />

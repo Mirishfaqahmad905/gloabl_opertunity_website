@@ -27,6 +27,18 @@ const authMiddleware = (req: any, res: any, next: any) => {
   }
 };
 
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_SECURE === 'true',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
 // --- AUTHENTICATION ---
 apiRouter.post('/auth/login', safe(async (req: any, res: any) => {
   const { username, password } = req.body;
@@ -36,6 +48,52 @@ apiRouter.post('/auth/login', safe(async (req: any, res: any) => {
   }
   const token = jwt.sign({ id: admin._id }, JWT_SECRET, { expiresIn: '1d' });
   res.json({ token });
+}));
+
+apiRouter.post('/auth/forgot-password', safe(async (req: any, res: any) => {
+  const { email } = req.body;
+  
+  if (email !== 'techhub905@gmail.com') {
+    return res.status(403).json({ error: 'Password reset is only allowed for the authorized admin email.' });
+  }
+
+  // Find admin account
+  let admin = await Admin.findOne({ username: 'admin' });
+  if (!admin) {
+    admin = await Admin.findOne(); // if any admin exists
+  }
+
+  // Create a new random password
+  const newPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+  const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+  if (admin) {
+    admin.password = hashedPassword;
+    await admin.save();
+  } else {
+    // If no admin exists, create one
+    await Admin.create({ username: 'admin', password: hashedPassword });
+  }
+
+  // Send the email
+  try {
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      await transporter.sendMail({
+        from: `"Admin System" <${process.env.SMTP_USER}>`,
+        to: email, // techhub905@gmail.com
+        subject: 'Admin Password Reset / Account Created',
+        text: `Your new admin password is: ${newPassword}\n\nLogin at ${process.env.APP_URL || 'http://localhost:3000'}/admin`,
+      });
+      res.json({ message: 'A new password has been generated and sent to techhub905@gmail.com' });
+    } else {
+      // In case SMTP is not configured, we still set the password, and log it to the backend console for the developer
+      console.log(`[DEV MODE] SMTP not configured. New admin password for ${email} is: ${newPassword}`);
+      res.json({ message: 'Check the server logs for your password (SMTP not configured). In production, set SMTP variables to send emails.' });
+    }
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    res.status(500).json({ error: 'Failed to send email. Check your SMTP configuration.' });
+  }
 }));
 
 // Setup Initial Admin
