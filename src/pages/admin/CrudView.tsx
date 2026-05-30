@@ -62,6 +62,7 @@ export default function CrudView({ model }: { model: string }) {
   const [data, setData] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEdit, setCurrentEdit] = useState<any>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const schema = SCHEMAS[model];
   const readOnly = model === 'messages' || model === 'subscribers';
 
@@ -86,9 +87,16 @@ export default function CrudView({ model }: { model: string }) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure?')) return;
-    await api.delete(`/admin/${model}/${id}`);
-    fetchData();
+    if (deletingId !== id) {
+      setDeletingId(id);
+      return;
+    }
+    try {
+      await api.delete(`/admin/${model}/${id}`);
+    } finally {
+      setDeletingId(null);
+      fetchData();
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -165,9 +173,16 @@ export default function CrudView({ model }: { model: string }) {
                       <Edit className="w-4 h-4" />
                     </button>
                   )}
-                  <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-lg">
-                    <Trash className="w-4 h-4" />
-                  </button>
+                  {deletingId === item._id ? (
+                    <div className="flex items-center space-x-2">
+                      <button onClick={() => handleDelete(item._id)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">Confirm</button>
+                      <button onClick={() => setDeletingId(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold transition">Cancel</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-lg transition">
+                      <Trash className="w-4 h-4" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
