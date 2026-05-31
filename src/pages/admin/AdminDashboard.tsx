@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../api';
-import { Settings, LogOut, FileText, Globe, Image, Users, Home, Youtube, Briefcase } from 'lucide-react';
+import { Settings, LogOut, FileText, Globe, Image, Users, Home, Youtube, Briefcase, TrendingUp } from 'lucide-react';
 import CrudView from './CrudView';
 
 export default function AdminDashboard() {
@@ -28,6 +28,7 @@ export default function AdminDashboard() {
     { id: 'carousels', label: 'Carousels', icon: <Image className="w-5 h-5 mr-2" /> },
     { id: 'messages', label: 'Messages', icon: <Users className="w-5 h-5 mr-2" /> },
     { id: 'subscribers', label: 'Subscribers', icon: <Users className="w-5 h-5 mr-2" /> },
+    { id: 'search_stats', label: 'Search Analytics', icon: <TrendingUp className="w-5 h-5 mr-2" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5 mr-2" /> },
   ];
 
@@ -62,8 +63,49 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 p-4 md:p-8 overflow-auto w-full max-w-full">
-        {activeTab === 'settings' ? <SettingsManager /> : <CrudView model={activeTab} />}
+        {activeTab === 'settings' ? <SettingsManager /> : activeTab === 'search_stats' ? <SearchStatsManager /> : <CrudView model={activeTab} />}
       </div>
+    </div>
+  );
+}
+
+function SearchStatsManager() {
+  const [stats, setStats] = useState<any[]>([]);
+
+  useEffect(() => {
+    api.get('/admin/search-stats').then(res => {
+      setStats(res.data || []);
+    }).catch(err => {
+      console.error(err);
+    });
+  }, []);
+
+  return (
+    <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 max-w-2xl">
+      <h2 className="text-2xl font-bold mb-6 text-slate-800 flex items-center">
+        <TrendingUp className="mr-3 text-blue-600" /> Top Searched Keywords
+      </h2>
+      <p className="text-slate-500 mb-6 font-medium">Use these insights to understand what students are searching for and adjust your content strategy.</p>
+      
+      {stats.length > 0 ? (
+        <div className="space-y-4">
+          {stats.map((stat, idx) => (
+            <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 transition-colors">
+              <div className="flex items-center space-x-4">
+                <span className="text-lg font-black text-slate-300 w-6">#{idx + 1}</span>
+                <span className="font-bold text-slate-800 text-lg uppercase tracking-wide">{stat.keyword}</span>
+              </div>
+              <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg font-bold text-sm">
+                {stat.count} searches
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center p-12 border-2 border-dashed border-slate-200 rounded-2xl">
+          <p className="text-slate-500 font-medium">No search data recorded yet.</p>
+        </div>
+      )}
     </div>
   );
 }

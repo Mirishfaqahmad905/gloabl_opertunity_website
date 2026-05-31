@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { Admin, Scholarship, Blog, Country, Ad, Carousel, ContactMessage, Setting, Subscriber, Video, Service } from './models';
+import { Admin, Scholarship, Blog, Country, Ad, Carousel, ContactMessage, Setting, Subscriber, Video, Service, SearchStat } from './models';
 
 export const apiRouter = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey123';
@@ -145,6 +145,17 @@ apiRouter.get('/public/scholarships', safe(async (req: any, res: any) => {
   if (req.query.region && req.query.region !== 'all') query.region = req.query.region;
   if (req.query.level && req.query.level !== 'all') query.level = req.query.level;
   if (req.query.search) {
+    const searchString = req.query.search.trim().toLowerCase();
+    
+    // Track search query statistics
+    if (searchString.length > 2) {
+      SearchStat.findOneAndUpdate(
+        { keyword: searchString },
+        { $inc: { count: 1 } },
+        { upsert: true, new: true }
+      ).catch(err => console.error('Failed to log search stat:', err));
+    }
+
     query.$or = [
       { title: { $regex: req.query.search, $options: 'i' } },
       { university: { $regex: req.query.search, $options: 'i' } }
@@ -227,3 +238,7 @@ apiRouter.put('/admin/settings', authMiddleware, safe(async (req: any, res: any)
 
 apiRouter.get('/admin/subscribers', authMiddleware, safe(async (req: any, res: any) => res.json(await Subscriber.find().sort('-createdAt'))));
 apiRouter.delete('/admin/subscribers/:id', authMiddleware, safe(async (req: any, res: any) => { await Subscriber.findByIdAndDelete(req.params.id); res.json({success: true}); }));
+
+apiRouter.get('/admin/search-stats', authMiddleware, safe(async (req: any, res: any) => {
+  res.json(await SearchStat.find().sort('-count -updatedAt').limit(5));
+}));

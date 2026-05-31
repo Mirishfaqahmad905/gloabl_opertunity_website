@@ -117,6 +117,13 @@ const videoSchema = new mongoose.Schema({
 });
 export const Video = mongoose.model('Video', videoSchema);
 
+// SearchStat
+const searchStatSchema = new mongoose.Schema({
+  keyword: { type: String, required: true, unique: true },
+  count: { type: Number, default: 1 },
+}, { timestamps: true });
+export const SearchStat = mongoose.model('SearchStat', searchStatSchema);
+
 // Service
 const serviceSchema = new mongoose.Schema({
   title: { type: String, required: true },
